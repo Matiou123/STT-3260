@@ -69,8 +69,8 @@ t <- seq(-3, 3, 0.01)
 plot_fonction_survie(pnorm, t)
 
 # Loi exponentielle λ=2
-t <- seq(0, 3, 0.01)
-plot_fonction_survie(pexp, t, rate = 2)
+t <- seq(0, 20, 0.01)
+plot_fonction_survie(pexp, t, rate = 1)
 
 # Loi Weibull α=1, λ=0.1
 t <- seq(0, 2, 0.01)
@@ -78,8 +78,23 @@ plot_fonction_survie(pweibull, t, shape = 1, scale = 0.1)
 
 # Loi Weibull α=0.5, λ=0.27
 t <- seq(0, 2, 0.01)
-plot_fonction_survie(pweibull, t, shape = 1, scale = 0.1)
+plot_fonction_survie(pweibull, t, shape = 1, scale = 0.27)
 
 # Loi Weibull α=3, λ=0.002
-t <- seq(0, 2, 0.01)
-plot_fonction_survie(pweibull, t, shape = 1, scale = 0.1)
+t <- seq(0, 20, 0.001)
+plot_fonction_survie(dweibull, t, shape = 3, scale = 0.002)
+
+plot(t, exp(-0.002*t^3),type="l")
+
+
+
+weib_survie <- function(t, shape = 1, scale = 1){
+  return (exp(-scale*t^shape))
+}
+weib_répartion <- function(t, shape = 1, scale = 1){
+  return (1 - weib_survie(t, shape, scale))
+}
+
+plot_fonction_survie(weib_survie, t, shape = 3, scale = 0.002)
+plot_fonction_survie(weib_survie, t, shape = 1, scale = 0.1)
+plot_fonction_survie(weib_survie, t, shape = 0.5, scale = 0.27)
