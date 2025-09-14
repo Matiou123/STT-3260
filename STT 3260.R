@@ -27,8 +27,10 @@ plot_fonction_survie <- function(loi, intervalle, type="l") {
 t <- seq(0, 4, 1)
 plot_fonction_cumul(function(x) pbinom(x, size = 4, prob = 0.5), t,type="S")
 plot_fonction_survie(function(x) pbinom(x, size = 4, prob = 0.5), t,type="S")
+                     
 # Loi exponentielle de paramètre 1
 t <- seq(0, 5, 0.1)
 plot_fonction_cumul(pexp, t)
 plot_fonction_survie(pexp, t)
+
 
