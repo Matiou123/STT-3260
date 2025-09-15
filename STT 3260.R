@@ -27,16 +27,16 @@ fonction_survie <- function(loi, t, ...) {
   return(1 - fonction_cumul(loi, t, ...))
 }
 
-plot_fonction_survie <- function(loi, intervalle, type = "l", ...) {
+plot_fonction_survie <- function(survie, intervalle, type = "l", ...) {
   # Récupère les paramètres supplémentaires
   params <- list(...)
   
   # Calcule la survie
-  S <- fonction_survie(loi, intervalle, ...)
+  S <- fonction_survie(survie, intervalle, ...)
   
   # Construit le titre
   titre <- paste("Fonction de survie de", 
-                 deparse(substitute(loi)),
+                 deparse(substitute(survie)),
                  if (length(params) > 0) paste0("(", 
                                                 paste(names(params), params, sep="=", collapse=", "), 
                                                 ")"))
@@ -88,13 +88,37 @@ plot(t, exp(-0.002*t^3),type="l")
 
 
 
-weib_survie <- function(t, shape = 1, scale = 1){
-  return (exp(-scale*t^shape))
+weib_survie <- function(t, forme = 1, échelle = 1){
+  return (exp(-échelle*t^forme))
 }
-weib_répartion <- function(t, shape = 1, scale = 1){
-  return (1 - weib_survie(t, shape, scale))
+weib_répartion <- function(t, forme = 1, échelle = 1){
+  return (1 - weib_survie(t, forme, échelle))
 }
 
-plot_fonction_survie(weib_survie, t, shape = 3, scale = 0.002)
-plot_fonction_survie(weib_survie, t, shape = 1, scale = 0.1)
-plot_fonction_survie(weib_survie, t, shape = 0.5, scale = 0.27)
+plot_fonction_survie(weib_survie, t, forme = 3, échelle = 0.002)
+plot_fonction_survie(weib_survie, t, forme = 1, échelle = 0.1)
+plot_fonction_survie(weib_survie, t, forme = 0.5, échelle = 0.27)
+
+weib_risque <- function(t,forme =1, échelle = 1){
+  return(échelle*forme*t^(forme-1))
+}
+plot_fonction_risque <- function(risque, intervalle, type="l", ...){
+  # Récupère les paramètres supplémentaires
+  params <- list(...) 
+  
+  # Calcule la survie
+  R <- risque(intervalle, ...)
+  
+  # Construit le titre
+  titre <- paste("Fonction de risque de", 
+                 deparse(substitute(risque)),
+                 if (length(params) > 0) paste0("(", 
+                                                paste(names(params), params, sep="=", collapse=", "), 
+                                                ")"))
+  
+  # Trace le graphe
+  plot(intervalle, R, type = type, col = "magenta", lwd = 3,
+       main = titre,
+       xlab = "t", ylab = "R(t)", ylim = c(0, 1))
+}
+plot_fonction_risque(weib_risque, t, forme=3, échelle = 0.002)
