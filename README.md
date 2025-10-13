@@ -1,4 +1,3 @@
 # STT-3260 
-# Modèle de survie
+Cours: Modèle de survie  
 
-## Devoirs
