@@ -1,4 +1,4 @@
-data <- read.table("C:/Users/14385/Desktop/A25/STT 3260/Devoirs/Devoir 3/kidney.txt", header=TRUE)
+data <- read.table("~/cheminVers/kidney.txt", header=TRUE)
 
 library(survival)
 
