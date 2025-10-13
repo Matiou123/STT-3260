@@ -25,7 +25,7 @@ EVM_lambda_gamma <- n * EVM_beta_gamma / (sum(data$Temps * data$`Nombre de rechu
 
 # b)
 library(flexsurv)
-d <- read.table("/Users/mathi/Desktop/Uni/STT 3260/Devoirs/Devoir 2/donneesRechute.txt", header=TRUE)
+d <- read.table("CheminVers/donneesRechute.txt", header=TRUE)
 modele_gengamma <- flexsurvreg(Surv(Temps) ~ 1,data= d ,dist = "gengamma")
 modele_gengamma$loglik
 modele_gengamma$coefficients
