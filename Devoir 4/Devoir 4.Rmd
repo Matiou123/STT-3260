@@ -1,0 +1,101 @@
+---
+title: "Devoir 4"
+author: "Mathieu Lemire"
+date: "2025-11-07"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1 a)
+```{r}
+data_kidney <- read.table("kidney.txt", header=T)
+
+library(survival)
+
+kidney.fit <- survfit( Surv( time = data_kidney$time, event = data_kidney$delta )
+                       ~ data_kidney$type)
+
+plot(kidney.fit, lty = 2,lwd = 2, col=c("darkviolet","violet"), 
+     main="Fonctions de survie estimées pour les deux groupes", 
+     xlab="Temps", ylab="Survie estimée")
+
+legend("bottomleft", c("Groupe 1 (Cathéter placé chirurgicalement)", 
+                       "Groupe 0 (Placement percutané de leur cathéter"), 
+       lty=c(2,2), lwd = 2,col=c("darkviolet","violet"))
+```
+Les fonctions de survie des groupes semblent indiquées que le taux de survie des patients du groupe 0 est plus élevé que celui du groupe 1. Donc la technique qui semble la plus efficace pour retarder le temps d'infection est le placement percutané de la cathéter du patient.
+
+# 1 b)
+
+J'ai créé une fonction qui renvoit le tableau des notes de cours en data.frame
+```{r} 
+estimation_risque_cumulé_NA <- function(data, groupe = 0, type, event) {
+  data_type <- data[data[[type]] == groupe, ]
+  data_delta <- data_type[data_type[[event]] == 1, ]
+  
+  temps_uniques <- unique(data_delta$time)
+  
+  i <- 1
+  cumul <- 0
+  
+  #######################Sortie##########################
+  risque_cumul <- numeric(length = length(temps_uniques))  
+  nb_à_risque <- numeric(length = length(temps_uniques))  
+  nb_de_décès <- numeric(length = length(temps_uniques))   
+  ratio <- numeric(length = length(temps_uniques))         
+  survie_est <- numeric(length = length(temps_uniques))    
+  écart_type <- numeric(length = length(temps_uniques))    
+  #######################Sortie##########################
+  
+  while (i < length(temps_uniques) + 1) {                 
+    t_i <- temps_uniques[i]                                
+    d_i <- nrow(data_delta[data_delta$time == t_i, ])
+    nb_de_décès[i] <- d_i
+    y_i <- nrow(data_type[data_type$time >= t_i, ])
+    nb_à_risque[i] <- y_i
+    ratio[i] <- d_i / y_i
+    cumul <- cumul + d_i / y_i
+    risque_cumul[i] <- cumul 
+    survie_est[i] <- exp(-risque_cumul[i])
+    écart_type[i] <- sqrt(survie_est[i]^2 * sum(ratio[1:i] / nb_à_risque[1:i]))
+    
+    i <- i + 1
+  }
+  
+  temps <- temps_uniques
+  nb_à_risque <- as.integer(nb_à_risque)
+  nb_de_décès <- as.integer(nb_de_décès)
+  return(data.frame(temps, nb_à_risque, nb_de_décès, ratio, 
+                    risque_cumul, survie_est, écart_type))
+}
+
+shunt.data = read.table( "shunt.txt", header=T)
+risque_cumul <- estimation_risque_cumulé_NA(shunt.data, 
+                                            groupe=1, 
+                                            type = "age", 
+                                            event="event")
+risque_cumul
+```
+On calcule à présent les tableaux des données de `kidney`
+
+## Groupe 1
+```{r}
+risque_cumul_1 <- estimation_risque_cumulé_NA(data_kidney, 
+                                              groupe=1,
+                                              type ="type", 
+                                              event = "delta")
+risque_cumul_1
+```
+
+## Groupe 0
+```{r}
+risque_cumul_0 <- estimation_risque_cumulé_NA(data_kidney, 
+                                              groupe=2,
+                                              type ="type", 
+                                              event = "delta")
+risque_cumul_0
+```
+Estimons le taux de risque 5 mois après la mise en place du cathéter pour chacun des groupes
