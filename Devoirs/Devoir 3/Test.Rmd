@@ -1,0 +1,218 @@
+---
+title: |
+  STT 3260  
+  Devoir 3
+author: "Mathieu Lemire"
+date: "2025-10-15"
+output: pdf_document
+---
+
+```{r}
+library(survival)
+```
+
+# Exercice 1
+
+## a)
+
+## Estimations des paramètres pour le groupe 0
+
+Pour le groupe 0, on a
+
+```{r}
+data <- read.table("C:/Users/14385/Desktop/A25/STT 3260/Devoirs/Devoir 3/kidney.txt",
+                    header=TRUE)
+
+groupe_0_weib <- survreg(Surv(time, delta) ~ 1, 
+                         data = data[data$type == 2,], 
+                         dist = "weibull")
+summary(groupe_0_weib)
+```
+
+## Estimation de $\LARGE\alpha_0$
+
+On a $$\log(\hat{\sigma}_0) = 0.616 \implies \hat{\sigma}_0 = \exp(0.616) \approx 1.852$$ Comme $\sigma = \dfrac{1}{\alpha}$, on a $\alpha = \dfrac{1}{\sigma}$. On calcule $\hat{\alpha}_0$ $$\hat{\alpha}_0 = \frac{1}{\hat{\sigma}_0} = \frac{1}{1.852} \approx 0.54$$
+
+```{r}
+mu_0 <- unname(groupe_0_weib$coefficients)
+sigma_0 <- groupe_0_weib$scale
+alpha_0 <- 1/sigma_0
+alpha_0
+```
+
+## Écart type de $\LARGE \hat{\alpha}_0$
+
+On doit utiliser la méthode delta: $$\widehat{Var(g(\hat{\beta}))} = (g'(\hat{\beta}))^2 Var(\hat{\beta}) \implies \sqrt{\widehat{Var(g(\hat{\beta}))}} = \left|g'(\hat{\beta}) \right| \sqrt{Var(\hat{\beta})}$$ Puisque la relation entre $\log(\sigma) \text{ et } \alpha$ est $\alpha = g(\log(\sigma))  = \exp(-\log(\sigma) )$, on a : $$\frac{\hat{\alpha}}{d(\log\hat{\sigma})} = - \exp(-\log(\hat{\sigma}))$$
+
+\begin{align*}
+\sqrt{\widehat{Var(\hat{\alpha}_0)}}  &= \frac{\hat{\alpha}_0}{d(\log\hat{\sigma}_0)} \sqrt{Var(\log\hat{\sigma}_0)}\\
+&= \Big|- \exp(-\log(\hat{\sigma}_0))\Big| \sqrt{Var(\log\hat{\sigma}_0)}\\
+&= \Big|- \hat{\alpha}_0 \;\Big| \sqrt{Var(\log\hat{\sigma}_0)}\\
+&\approx \Big|- 0.54 \;\Big|\times 0.265 \\
+&= 0.1431
+\end{align*}
+
+## Estimation de $\LARGE\lambda_0$
+
+La relation entre $\mu$ et $\lambda$ est $\mu = \dfrac{-\log(\lambda)}{\alpha} \implies \lambda = \exp(-\alpha\mu)$. Puisque $\hat{\mu}_0 = 5.411$, on a $$\hat{\lambda}_0 = \exp(-\hat{\alpha}_0\hat{\mu}_0) =
+\exp(-0.54 \times 5.411) \approx  0.0538$$
+
+```{r}
+lambda_0 <- exp(-alpha_0 * mu_0)
+lambda_0 <- unname(lambda_0)
+lambda_0
+```
+
+## Écart type de $\LARGE \hat{\lambda}_0$
+
+On pose $\eta =\log(\sigma)$, ce qui implique que $\lambda = \exp\left(-\frac{\mu}{\sigma}\right) = \exp\left(-\mu \exp(-\log \mu) \right) = \exp\left(-\mu e^{-\eta} \right)$.
+
+On calcule les dérivées de $\lambda = g(\mu,\eta)$ : $$\dfrac{\partial\lambda}{\partial\mu} = - e^{-\eta}\exp(-\mu e^{-\eta}) = -\lambda e^{-\eta} \quad  \quad \quad
+\dfrac{\partial\lambda}{\partial\eta} = \mu e^{-\eta}\exp(-\mu e^{-\eta}) = \lambda \mu e^{-\eta}$$
+
+On calcule la variance estimée de $\hat{\lambda}$
+
+$$\widehat{Var(\hat{\lambda})} =
+\begin{pmatrix}
+\dfrac{\partial\hat{\lambda}}{\partial\hat{\mu}} &
+\dfrac{\partial\hat{\lambda}}{\partial\hat{\eta}}
+\end{pmatrix}
+\begin{pmatrix}
+Var(\hat{\mu}) & Cov(\hat{\mu}, \hat{\eta}) \\
+Cov(\hat{\mu}, \hat{\eta}) & Var(\hat{\eta})
+\end{pmatrix}
+\begin{pmatrix} 
+\dfrac{\partial\hat{\lambda}}{\partial\hat{\mu}} \\
+\dfrac{\partial\hat{\lambda}}{\partial\hat{\eta}}
+\end{pmatrix}$$
+
+```{r}
+eta_0 <- log(sigma_0)
+vecteur_der_0 <-c(-lambda_0*exp(-eta_0) , lambda_0*mu_0 *exp(-eta_0))
+vecteur_der_0
+```
+
+```{r}
+matrice_var_0 <- groupe_0_weib$var
+matrice_var_0
+```
+
+```{r}
+var_lamda_0 <- as.numeric(t(unname(vecteur_der_0)) %*% unname(matrice_var_0) %*% unname(vecteur_der_0))
+var_lamda_0
+```
+
+Donc $\widehat{Var(\hat{\lambda}_0)} \approx 0.0005427$ et l'écart type estimé est
+
+```{r}
+std_err_lambda_0 <- as.numeric(sqrt(var_lamda_0))
+std_err_lambda_0
+```
+
+Donc $\widehat{SE(\hat{\lambda}_0)} \approx 0.0233$
+
+## Estimations des paramètres pour le groupe 1
+
+```{r}
+groupe_1_weib <- survreg(Surv(time, delta) ~ 1, data = data[data$type == 1,], dist = "weibull")
+summary(groupe_1_weib)
+```
+
+## Estimation de $\LARGE\alpha_1$
+
+On a $$\log(\hat{\sigma}_1) = -0.467 \implies \hat{\sigma}_1 = \exp(-0.467 ) \approx 0.627 \implies \hat{\alpha}_1 = \frac{1}{\hat{\sigma}_1} = \frac{1}{0.627} \approx 1.595$$
+
+```{r}
+mu_1 <- unname(groupe_1_weib$coefficients)
+sigma_1 <- groupe_1_weib$scale
+alpha_1 <- 1/sigma_1
+alpha_1
+```
+
+## Écart type de $\LARGE \hat{\alpha}_1$
+
+\begin{align*}
+\sqrt{\widehat{Var(\hat{\alpha}_1)}}  &= \frac{\hat{\alpha}_1}{d(\log\hat{\sigma}_1)} \sqrt{Var(\log\hat{\sigma}_1)}\\
+&= \Big|- \exp(-\log(\hat{\sigma}_1))\Big| \sqrt{Var(\log\hat{\sigma}_1)}\\
+&= \Big|- \hat{\alpha}_1 \;\Big| \sqrt{Var(\log\hat{\sigma}_1)}\\
+&\approx \Big|- 1.595 \;\Big|\times 0.203 \\
+&= 0.323785
+\end{align*}
+
+## Estimation de $\LARGE\lambda_1$
+
+Puisque $\hat{\mu}_1 = 3.194$, on a $$ \hat{\lambda}_1 = \exp(-\hat{\alpha}_1\hat{\mu}_1) =
+\exp(-1.595 \times 3.194) \approx  0.00613$$
+
+```{r}
+lambda_1 <- exp(-alpha_1 * mu_1)
+lambda_1 <- unname(lambda_1)
+lambda_1
+```
+
+## Écart type de $\LARGE\hat{\lambda}_1$
+
+On calcule en premier les dérivés partielles de $\hat{\lambda}_1$ par rapport à $\eta_1$ et par rapport à $\mu_1$
+
+```{r}
+eta_1 <- log(sigma_1)
+vecteur_der_weib_1 <-c(-lambda_1*exp(-eta_1) , lambda_1*mu_1 *exp(-eta_1))
+vecteur_der_weib_1
+```
+
+La matrice de covariance $Cov(\hat{\mu}, \hat{\eta})$ est
+
+```{r}
+matrice_var_1 <- groupe_1_weib$var
+matrice_var_1
+```
+
+On calcule à présent $Cov(\hat{\lambda}_1)$
+
+```{r}
+var_lambda_1 <- as.numeric(t(unname(vecteur_der_weib_1)) %*% unname(matrice_var_1) %*% unname(vecteur_der_weib_1))
+var_lambda_1
+```
+
+On calcule maintenant l'écart type
+
+```{r}
+std_err_lambda_1 <- sqrt(var_lambda_1)
+std_err_lambda_1
+```
+
+On a $\widehat{SE(\hat{\lambda}_1)} = 0.00577$
+
+## b)
+
+On teste l'hypothèse que $\alpha = 1$ pour chacun des groupe. On pose $$H_0: \alpha = 1 \quad\quad H_1:\alpha \not=1$$ Mais puisqu'on a $\alpha = \dfrac{1}{\sigma} \implies \log(\alpha) = -\log(\sigma)$ et pour $\alpha = 1 \implies \log(\sigma) = 0$ On avait déjà posé plus haut que $\eta = \log(\sigma)$. Nos hypothèses sont alors: $$H_0:\eta = 0 \quad \quad H_1:\eta\not=0$$
+
+## Tests pour le groupe 0
+
+On rappel la sortie:
+
+```{r}
+summary(groupe_0_weib)
+```
+
+## Test de Wald
+
+La statistique de Wald est déjà calculer, $W=2.32$ et la p-valeur associé à la statistique de Wald pour $\eta$ est de $0.02<0.05$. On peut rejetter l'hypothèse nulle au niveau 5% mais nous ne pouvons pas rejetter l'hypothèse nul au niveau 1%
+
+## Test du rapport de vraisemblance
+
+Pour $\alpha=1$ la distribution Weibull$(\alpha,\lambda)$ suit une distribution Exponentielle$(\lambda)$. On peut faire l'ajustement avec l'exponentielle et faire le test du rapport de vraisemblance puisque l'Exponentielle$(\lambda)$ est emboîté dans la Weibull$(\alpha =1,\lambda)$
+```{r}
+groupe_0_exp <- survreg( Surv(time, delta) ~1, 
+                         data = data[data$type == 2,],
+                         dist = "exp")
+summary(groupe_0_exp)
+```
+On calcule la statistitque de test:
+$$\Lambda = -2 [\ell(\alpha =1, \hat{\lambda}) - \ell(\hat{\alpha},\hat{\lambda})] = -2[-55.1 - (-51.6)] = 7$$
+Nous avons un paramètres de différents entre les modèles donc on calcule la valeur-p avec une $\chi_1^2$. La valeur-p est $$\mathbb{P}(\chi_1^2 \ge7) = $$
+```{r}
+valeur_p_rap_vrai_groupe_0 <-pchisq(7,1,lower.tail = FALSE)
+names(valeur_p_rap_vrai_groupe_0) <- "Valeur-p"
+valeur_p_rap_vrai_groupe_0
+```
