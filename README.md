@@ -4,12 +4,12 @@ Cours: Modèle de survie
 Lien de mon dossier Overleaf de ce [cours](https://www.overleaf.com/read/dgrvfhqrxwmv#48351c)
 
 # Notes
--Devoir 1: 97%
--Devoir 2: 93%
--Devoir 3: 90%
--Devoir 4: 70%
--Devoir 5: 80%
--Devoir 6: NA
+- Devoir 1: 97%
+- Devoir 2: 93%
+- Devoir 3: 90%
+- Devoir 4: 70%
+- Devoir 5: 80%
+- Devoir 6: NA
 
 # Commentaire du professeur
 - Devoir 1: NA
